@@ -6,6 +6,10 @@
 
 3. SELECT name, area FROM world WHERE area BETWEEN 200000 AND 250000;
 
+
+
+
+
 --1 Pattern Matching Queries
 
 --Show the name for countries that have a population of at least 200 million
@@ -59,4 +63,48 @@ Don't include countries where the name and the capital are the same word.*/
 --Find the country that has all the vowels and no spaces in its name.
 12. SELECT name FROM TABLE_NAME WHERE name LIKE '%a%' AND
      name  LIKE '%e%' AND name  LIKE '%i%' AND name  LIKE '%o%' AND
-     name  LIKE '%u%' AND name NOT LIKE '% %'
+     name  LIKE '%u%' AND name NOT LIKE '% %';
+
+
+
+
+
+--Queries within Queries
+
+--List each country name where the population is larger than that of 'Russia'.
+1. SELECT name FROM world WHERE population >
+     (SELECT population FROM world WHERE name = 'Russia');
+
+--Show the countries in Europe with a per capita GDP greater than 'United Kingdom'.
+2. SELECT name FROM world WHERE continent = 'Europe' AND gdp/population >
+    (SELECT gdp/population FROM world WHERE name = 'United Kingdom');
+
+/*List the name and continent of countries in the continents containing either
+Argentina or Australia. Order by name of the country.*/
+3. SELECT name, continent FROM world WHERE continent IN
+    (SELECT continent FROM world WHERE name IN ('Argentina', 'Australia'))
+    ORDER BY name;
+
+/*Which country has a population that is more than Canada but less than Poland?
+Show the name and the population.*/
+4. SELECT name, population FROM world WHERE population
+    > (SELECT population FROM world WHERE name = 'Canada') AND population
+    < (SELECT population FROM world WHERE name = 'Poland');
+
+/*Show the name and the population of each country in Europe.
+Show the population as a percentage of the population of Germany.*/
+5. SELECT name, CONCAT(ROUND(100*population/(SELECT population FROM world WHERE name='Germany')),'%')
+    FROM world WHERE continent='Europe';
+
+--Which countries have a GDP greater than every country in Europe?
+6. SELECT name FROM world WHERE gdp >= all(SELECT gdp FROM world
+    WHERE continent = 'Europe' AND gdp > 0) AND contient != 'Europe';
+
+--Find the largest country area in each continent, show continent, name and area
+7. SELECT continent, name, area FROM world x
+    WHERE area >= ALL (SELECT area FROM world y
+    WHERE y.continent=x.continent AND area>0)
+
+--List each continent and the name of country that comes first alphabetically
+8. SELECT continent, name FROM world x WHERE x.name <= ALL (
+    SELECT name FROM world y WHERE x.continent=y.continent);
