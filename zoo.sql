@@ -69,7 +69,7 @@ Don't include countries where the name and the capital are the same word.*/
 
 
 
---Queries within Queries
+--2 Queries within Queries
 
 --List each country name where the population is larger than that of 'Russia'.
 1. SELECT name FROM world WHERE population >
@@ -113,7 +113,7 @@ Show the population as a percentage of the population of Germany.*/
 
 
 
---Aggregate Functions
+--3 Aggregate Functions
 
 --Show the total population of the world
 1.  SELECT SUM(population) FROM world;
@@ -137,3 +137,112 @@ Show the population as a percentage of the population of Germany.*/
 --List the continents that have a total population of at least 100 million.
 7. SELECT continent FROM world GROUP BY continent
     HAVING SUM(population) >= 10000000;
+
+
+
+
+
+--4 Joining Tables
+
+--Show matchid and player name for all goals scored by Germany
+1. SELECT matchid, player FROM goal
+    WHERE teamid = 'GER'
+
+--Show id, stadium, team1, team2 for game 1012
+2. SELECT id,stadium,team1,team2
+    FROM game WHERE game.id = 1012
+
+--Show player, teamed, stadium and made for every German goal.
+3. SELECT player,teamid, stadium, mdate FROM game
+    JOIN goal ON (game.id=goal.matchid) WHERE teamid='GER'
+
+--Show team1, team2, player for every goal from a player named Mario.
+4. SELECT team1, team2, player FROM game JOIN goal
+    ON game.id=goal.matchid WHERE player LIKE 'Mario%'
+
+--Show player, teamid, coach, gtime for all goals scored in first 10 minutes.
+5. SELECT player, teamid, coach, gtime FROM eteam
+    JOIN goal ON teamid=eteam.id WHERE gtime <= 10
+
+--List dates and name of team in which ‘Fernando Santos’ was the team1 coach.
+6. SELECT mdate, teamname FROM game JOIN eteam
+    ON game.team1 = eteam.id WHERE coach = 'Fernando Santos'
+
+--List the player for every goal scored in a game where the stadium was 'National Stadium, Warsaw'
+7. SELECT player FROM goal JOIN game
+    ON goal.matchid = game.id WHERE stadium = 'National Stadium, Warsaw'
+
+--Show the name of all players who scored goal against Germany.
+8. SELECT DISTINCT player FROM game JOIN goal ON goal.matchid = game.id
+        WHERE (team1='GER' or team2='GER') AND goal.teamid <> 'GER'
+
+--Show teamname and total number of goals scored.
+9. SELECT teamname, COUNT(player) goals_scored
+    FROM eteam JOIN goal ON eteam.id = goal.teamid GROUP BY teamname
+
+--Show stadium name and total number of goals scored.
+10. Select stadium, COUNT(player) goals_scored FROM game
+     JOIN goal ON game.id = goal.matchid GROUP BY stadium
+
+
+
+
+
+--5 Null Statements
+
+--List the teachers who have NULL for their department
+1. SELECT name FROM teacher WHERE dept IS NULL
+
+--Use inner join to miss teachers with no department and vice versa.
+2. SELECT teacher.name, dept.name FROM teacher
+    INNER JOIN dept ON (teacher.dept=dept.id)
+
+--Use a different JOIN so that all teachers are listed
+3. SELECT teacher.name, dept.name FROM teacher
+    LEFT JOIN dept ON teacher.dept = dept.id;
+
+--Use a different join so that all departments are listed.
+4. SELECT teacher.name, dept.name FROM teacher
+    RIGHT JOIN dept ON teacher.dept = dept.id;
+
+--Show teacher name and mobile phone number or COALESCE
+5. SELECT name, COALESCE(mobile, '07986 444 2266') FROM teacher
+
+--Use coalesce for the LEFT JOIN from 3
+6. SELECT teacher.name AS teacher, COALESCE(dept.name,'None') AS department
+    FROM teacher LEFT JOIN dept ON (teacher.dept=dept.id)
+
+--Use COUNT to show the number of teachers and the number of mobile phones
+7. SELECT COUNT(name), COUNT(mobile) FROM teacher
+
+--Use COUNT and GROUP BY dept.name to show each department and the number of staff.
+8. SELECT dept.name, COUNT(teacher.name) FROM teacher RIGHT JOIN dept
+    ON teacher.dept = dept.id GROUP BY dept.name
+
+/*Use CASE to show the name of each teacher followed by 'Sci' if the teacher
+is in dept 1 or 2 and 'Art' otherwise*/
+9. SELECT teacher.name CASE
+    WHEN dept.id=1 THEN ‘Sci’ WHEN dept.id=2 THEN ’Sci’ ELSE ‘ART’ END
+    FROM teacher LEFT JOIN dept ON (teacher.dept = dept.id)
+
+/*Use CASE to show the name of each teacher followed by ‘Sci’ if the the teacher
+is in dept 1 or 2 show ‘Art’ if the dept is 3 and ‘None’ otherwise*/
+10. SELECT teacher.name, CASE
+    WHEN dept.id=1 THEN 'Sci' WHEN dept.id=2 THEN 'Sci' WHEN dept.id=3 THEN 'Art'
+    ELSE 'None' END FROM teacher LEFT JOIN dept ON (teacher.dept=dept.id)
+
+
+
+
+
+--6 Self Joins
+
+--How many stops are in the data base
+1. SELECT COUNT(stops.id) FROM stops
+
+--Find the ID value for the stop ‘Craiglockhart’
+2. SELECT id FROM stops WHERE name = ‘Craiglockhart’
+
+--Give the ID and the name for the stops on the ‘4’ ‘LRT’ service
+3. SELECT id, name FROM stops JOIN route ON id=stop 
+    WHERE num = '4' AND company = 'LRT'  
